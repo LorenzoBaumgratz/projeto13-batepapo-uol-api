@@ -55,4 +55,30 @@ app.get("participants", async (req, res) => {
         res.status(500).send(err.message)
     }
 })
+
+app.post("/messages", async (req, res) => {
+    const { to, text, type } = req.body
+    const { User } = req.header
+
+
+    const mensagem =
+    {
+        from: User,
+        to: to,
+        text: text,
+        type: type,
+        time: dayjs //ARRUMAR HH:mm:ss
+    }
+
+    try {
+        const existe = await db.collection("participants").findOne({ name: from })
+        if (typeof (to) !== "string" || typeof (text) !== "string" || to.length !== 0 || text.length !== 0 || type === "message" || type === "private_message" || !existe) {
+            return res.sendStatus(422)
+        }
+        await db.collection("messages").insertOne(mensagem)
+        res.sendStatus(201)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+})
 app.listen(5000)
