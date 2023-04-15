@@ -111,4 +111,28 @@ app.get("/messages", async (req, res) => {
     }
 })
 
+app.post("/status", async (req, res) => {
+    const { user } = req.headers
+    if (!user) return res.sendStatus(404)
+
+    const verify = await db.collection("participants").find({ name: user })
+    if (!verify) return res.sendStatus(404)
+
+    try {
+        const aux=await db.collection("participants").findOne({ name: user })
+        aux.lastStatus=Date.now()
+        console.log(aux)
+        console.log(Date.now())
+        const result = await db.collection("participants").updateOne({ name: user }, { $set:aux})
+        if (result.matchedCount === 0) {
+            console.log("aqui")
+            return res.sendStatus(404)
+        }
+        res.sendStatus(200)
+    } catch (err) {
+        res.sendStatus(404)
+    }
+
+})
+
 app.listen(5000)
