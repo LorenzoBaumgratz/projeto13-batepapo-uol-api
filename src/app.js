@@ -38,7 +38,7 @@ app.post("/participants", async (req, res) => {
         to: "Todos",
         text: "entra na sala...",
         type: "status",
-        time: dayjs().format("HH:mm:ss") 
+        time: dayjs().format("HH:mm:ss")
     }
     const result = await db.collection("participants").findOne({ name: name })
     if (result) return res.sendStatus(409)
@@ -72,11 +72,11 @@ app.post("/messages", async (req, res) => {
         to: to,
         text: text,
         type: type,
-        time: dayjs().format("HH:mm:ss") 
+        time: dayjs().format("HH:mm:ss")
     }
     const existe = await db.collection("participants").findOne({ name: user })
-    if (existe===null) return res.sendStatus(422)
-    
+    if (existe === null) return res.sendStatus(422)
+
     const schema = joi.object({
         to: joi.string().required(),
         text: joi.string().required(),
@@ -93,12 +93,22 @@ app.post("/messages", async (req, res) => {
     }
 })
 
-// app.get("/messages",async(req,res)=>{
-//     const {User}=req.headers
-//     const {limit}=req.query
+app.get("/messages", async (req, res) => {
+    const { user } = req.headers
+    const { limit } = req.query
+    console.log(parseInt(limit))
+    console.log(typeof (parseInt(limit)))
+    console.log(limit)
 
-//     if(limit<=0 || typeof(Number(limit)!=="number")) 
-//     const mensagens1=await db.collection("messages").find({})
-// })
+    if (limit) {
+        if (limit <= 0 || (isNaN(parseInt(limit)) && !isFinite(limit))) return res.sendStatus(422)
+    }
+    const mensagens = await db.collection("messages").find({ $or: [{ to: "Todos" }, { to: user }, { from: user }] }).toArray()
+    if (!limit) {
+        res.send(mensagens)
+    } else {
+        res.send(mensagens.slice(0, limit))
+    }
+})
 
 app.listen(5000)
