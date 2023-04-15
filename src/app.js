@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import { MongoClient, ObjectId } from "mongodb"
 import dotenv from "dotenv"
+import joi from "joi"
 
 const app = express()
 app.use(express.json())
