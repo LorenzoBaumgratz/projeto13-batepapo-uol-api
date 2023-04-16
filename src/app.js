@@ -19,24 +19,26 @@ try {
 const db = mongoClient.db()
 
 setInterval(async () => {
-    const result = await db.collection("participants").find({ lastStatus: { $gt: Date.now() - 10000 } }).toArray()
-
-    result.forEach(i => async function(){
+    const result = await db.collection("participants").find({ lastStatus: { $lt: (Date.now() - 10000) } }).toArray()
+    console.log(result)
+    result.forEach(async i =>  {
+        console.log("aqui")
         const leave = {
-            from: result.name,
+            from: i.name,
             to: "Todos",
             text: "sai da sala...",
             type: "status",
             time: dayjs().format("HH:mm:ss")
         }
+        console.log(i.name)
+        console.log(leave)
 
-
-        await db.collection("participants").deleteOne({name:result.name})
+        await db.collection("participants").deleteOne({ name: i.name })
         await db.collection("messages").insertOne(leave)
     })
 
 
-}, 15000)
+}, 3000)
 
 app.post("/participants", async (req, res) => {
     const { name } = req.body
