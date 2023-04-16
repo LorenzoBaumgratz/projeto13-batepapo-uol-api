@@ -18,6 +18,26 @@ try {
 }
 const db = mongoClient.db()
 
+setInterval(async () => {
+    const result = await db.collection("participants").find({ lastStatus: { $gt: Date.now() - 10000 } }).toArray()
+
+    result.forEach(i => async function(){
+        const leave = {
+            from: result.name,
+            to: "Todos",
+            text: "sai da sala...",
+            type: "status",
+            time: dayjs().format("HH:mm:ss")
+        }
+
+
+        await db.collection("participants").deleteOne({name:result.name})
+        await db.collection("messages").insertOne(leave)
+    })
+
+
+}, 15000)
+
 app.post("/participants", async (req, res) => {
     const { name } = req.body
     const schema = joi.object({
@@ -119,11 +139,11 @@ app.post("/status", async (req, res) => {
     if (!verify) return res.sendStatus(404)
 
     try {
-        const aux=await db.collection("participants").findOne({ name: user })
-        aux.lastStatus=Date.now()
+        const aux = await db.collection("participants").findOne({ name: user })
+        aux.lastStatus = Date.now()
         console.log(aux)
         console.log(Date.now())
-        const result = await db.collection("participants").updateOne({ name: user }, { $set:aux})
+        const result = await db.collection("participants").updateOne({ name: user }, { $set: aux })
         if (result.matchedCount === 0) {
             console.log("aqui")
             return res.sendStatus(404)
